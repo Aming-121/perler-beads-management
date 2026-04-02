@@ -12,7 +12,7 @@ echo "=========================================="
 
 # 配置变量
 PROJECT_DIR="/root/perler-beads-management"
-PORT=3000
+PORT=8080
 
 # 数据库配置
 DB_HOST="beads-manager-postgresql.ns-lewxfuoj.svc"
