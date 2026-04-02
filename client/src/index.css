@@ -460,3 +460,112 @@ html, body {
 ::-webkit-scrollbar-thumb:hover {
   background: #9ca3af;
 }
+
+/* Search Container */
+.search-container {
+  padding: 0 20px 16px;
+  background: #f5f7fa;
+}
+
+.search-wrapper {
+  display: flex;
+  align-items: center;
+  background: white;
+  border-radius: 14px;
+  padding: 0 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.search-icon {
+  width: 20px;
+  height: 20px;
+  color: #9ca3af;
+  flex-shrink: 0;
+}
+
+.search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  padding: 14px 0;
+  font-size: 15px;
+  background: transparent;
+  color: #1f2937;
+}
+
+.search-input::placeholder {
+  color: #9ca3af;
+}
+
+/* Series Card Letter */
+.series-letter {
+  font-size: 22px;
+  font-weight: 700;
+  display: block;
+  margin-bottom: 4px;
+}
+
+/* Items Grid */
+.items-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  padding: 16px 20px;
+}
+
+.item-card {
+  background: white;
+  border-radius: 12px;
+  padding: 14px 10px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.item-card:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.item-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 4px;
+}
+
+.item-qty {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.item-qty.zero {
+  color: #9ca3af;
+}
+
+.item-qty.low {
+  color: #ef4444;
+}
+
+/* Empty Icon Size */
+.empty-icon {
+  width: 48px;
+  height: 48px;
+}
+
+/* SVG Icons - 统一尺寸 */
+svg[class*="nav-icon"] {
+  width: 24px;
+  height: 24px;
+}
+
+svg[class*="empty-icon"] {
+  width: 48px;
+  height: 48px;
+}
+
+svg[class*="search-icon"] {
+  width: 20px;
+  height: 20px;
+}
