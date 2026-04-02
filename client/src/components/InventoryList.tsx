@@ -57,7 +57,7 @@ export default function InventoryList({ inventory, onUpdate, searchQuery }: Prop
   };
 
   return (
-    <div>
+    <div style={{ padding: '0 20px' }}>
       {/* Series Grid */}
       <div className="series-grid">
         {filteredSeries.map(series => {
