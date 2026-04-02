@@ -8,10 +8,11 @@ interface Props {
 
 const SERIES_LIST = ['全部', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'M'];
 
-// 格式化日期
+// 格式化日期（使用北京时间）
 const formatDate = (isoString: string) => {
   const date = new Date(isoString);
   return date.toLocaleString('zh-CN', {
+    timeZone: 'Asia/Shanghai',
     month: '2-digit',
     day: '2-digit',
     hour: '2-digit',
@@ -19,10 +20,11 @@ const formatDate = (isoString: string) => {
   });
 };
 
-// 格式化完整日期（用于统计）
+// 格式化完整日期（用于统计，使用北京时间）
 const formatFullDate = (isoString: string) => {
   const date = new Date(isoString);
   return date.toLocaleDateString('zh-CN', {
+    timeZone: 'Asia/Shanghai',
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
@@ -129,7 +131,7 @@ export default function Query({ transactions }: Props) {
               onChange={e => setFilterNumber(e.target.value)}
             >
               <option value="">全部序号</option>
-              {Array.from({ length: 31 }, (_, i) => i + 1).map(n => (
+              {Array.from({ length: 60 }, (_, i) => i + 1).map(n => (
                 <option key={n} value={n}>序号 {n}</option>
               ))}
             </select>

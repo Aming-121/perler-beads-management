@@ -79,7 +79,7 @@ async function initDatabase() {
       CREATE TABLE IF NOT EXISTS inventory (
         id SERIAL PRIMARY KEY,
         series VARCHAR(1) NOT NULL,
-        number INT NOT NULL CHECK (number >= 1 AND number <= 31),
+        number INT NOT NULL CHECK (number >= 1 AND number <= 60),
         quantity INT NOT NULL DEFAULT 0,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         UNIQUE(series, number)
