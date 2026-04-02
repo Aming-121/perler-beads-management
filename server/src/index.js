@@ -106,17 +106,7 @@ async function initDatabase() {
     await pool.query(`CREATE INDEX IF NOT EXISTS idx_transactions_timestamp ON transactions(timestamp DESC)`);
     console.log('✅ 索引已创建');
 
-    // 插入示例数据（如果不存在）
-    await pool.query(`
-      INSERT INTO inventory (series, number, quantity) VALUES
-        ('A', 1, 50), ('A', 5, 30), ('A', 12, 25),
-        ('B', 3, 40), ('B', 8, 15),
-        ('C', 2, 60), ('C', 7, 45), ('C', 15, 20),
-        ('D', 1, 35), ('E', 4, 28), ('F', 6, 42),
-        ('G', 9, 18), ('H', 2, 55), ('M', 1, 100)
-      ON CONFLICT (series, number) DO NOTHING
-    `);
-    console.log('✅ 示例数据已插入');
+    console.log('✅ 数据库初始化完成');
 
   } catch (error) {
     console.error('❌ 数据库初始化失败:', error.message);
