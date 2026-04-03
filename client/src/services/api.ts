@@ -1,7 +1,7 @@
 import { InventoryItem, Transaction } from '../types';
 
 // Cloudflare Worker 代理地址（国内可访问）
-const API_BASE = 'https://hidden-sky-7418.160405334.workers.dev/api';
+const API_BASE = 'https://aming030121.top/api';
 
 // 类型定义
 interface ApiResponse<T> {
