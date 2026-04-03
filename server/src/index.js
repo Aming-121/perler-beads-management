@@ -1,135 +1,231 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import pool from './db/connection.js';
-import inventoryRoutes from './routes/inventory.js';
-import transactionsRoutes from './routes/transactions.js';
+import pg from 'pg';
 
 dotenv.config();
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const { Pool } = pg;
+
+const pool = new Pool({
+  host: process.env.DB_HOST || 'db.wysxndhhqwirsdgubjmv.supabase.co',
+  port: process.env.DB_PORT || 5432,
+  database: process.env.DB_NAME || 'postgres',
+  user: process.env.DB_USER || 'postgres',
+  password: process.env.DB_PASSWORD || process.env.DB_HOST ? '' : 'eIZSF0oWUD7h59JK',
+  ssl: { rejectUnauthorized: false },
+  max: 20,
+});
 
 const app = express();
-const PORT = process.env.PORT || 3000;
 
-// 中间件
 app.use(cors({
   origin: 'https://perler-beads-management-client.vercel.app',
   credentials: true
 }));
 app.use(express.json());
 
-// 请求日志
-app.use((req, res, next) => {
-  console.log(`${new Date().toISOString()} ${req.method} ${req.path}`);
-  next();
-});
-
-// 静态文件服务（生产环境）
-const clientDistPath = path.join(__dirname, '../../client/dist');
-app.use(express.static(clientDistPath));
-
-// API 路由
-app.use('/api/inventory', inventoryRoutes);
-app.use('/api/transactions', transactionsRoutes);
-
 // 健康检查
 app.get('/api/health', async (req, res) => {
   try {
     await pool.query('SELECT 1');
-    res.json({ status: 'ok', database: 'connected', timestamp: new Date().toISOString() });
+    res.json({ status: 'ok', database: 'connected' });
   } catch (error) {
-    res.status(500).json({ status: 'error', database: 'disconnected', error: error.message });
+    res.status(500).json({ status: 'error', database: 'disconnected' });
   }
 });
 
-// SPA 路由支持 - 所有未匹配的路由返回 index.html
-app.get('*', (req, res) => {
-  const indexPath = path.join(clientDistPath, 'index.html');
-  res.sendFile(indexPath, (err) => {
-    if (err) {
-      res.status(200).send(`
-        <!DOCTYPE html>
-        <html>
-        <head><title>拼豆库存管理</title></head>
-        <body>
-          <h1>拼豆库存管理系统</h1>
-          <p>后端服务运行正常，请先构建前端：</p>
-          <pre>cd client && npm install && npm run build</pre>
-        </body>
-        </html>
-      `);
-    }
-  });
-});
-
-// 错误处理
-app.use((err, req, res, next) => {
-  console.error('服务器错误:', err);
-  res.status(500).json({ error: err.message || '服务器内部错误' });
-});
-
-// 初始化数据库表
-async function initDatabase() {
+// 获取所有库存
+app.get('/api/inventory', async (req, res) => {
   try {
-    console.log('🔄 正在初始化数据库表...');
-    
-    // 创建库存表
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS inventory (
-        id SERIAL PRIMARY KEY,
-        series VARCHAR(1) NOT NULL,
-        number INT NOT NULL CHECK (number >= 1 AND number <= 35),
-        quantity INT NOT NULL DEFAULT 0,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        UNIQUE(series, number)
-      )
-    `);
-    console.log('✅ inventory 表已创建');
-
-    // 创建交易记录表
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS transactions (
-        id BIGSERIAL PRIMARY KEY,
-        series VARCHAR(1) NOT NULL,
-        number INT NOT NULL,
-        type VARCHAR(3) NOT NULL CHECK (type IN ('in', 'out')),
-        quantity INT NOT NULL CHECK (quantity > 0),
-        timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-    console.log('✅ transactions 表已创建');
-
-    // 创建索引
-    await pool.query(`CREATE INDEX IF NOT EXISTS idx_inventory_series ON inventory(series)`);
-    await pool.query(`CREATE INDEX IF NOT EXISTS idx_transactions_series ON transactions(series)`);
-    await pool.query(`CREATE INDEX IF NOT EXISTS idx_transactions_timestamp ON transactions(timestamp DESC)`);
-    console.log('✅ 索引已创建');
-
-    console.log('✅ 数据库初始化完成');
-
+    const result = await pool.query(
+      'SELECT series, number, quantity FROM inventory ORDER BY series, number'
+    );
+    res.json(result.rows);
   } catch (error) {
-    console.error('❌ 数据库初始化失败:', error.message);
+    console.error('获取库存失败:', error);
+    res.status(500).json({ error: '获取库存失败' });
   }
-}
-
-// 启动服务器
-app.listen(PORT, async () => {
-  console.log(`
-╔════════════════════════════════════════════╗
-║    拼豆库存管理系统 - 后端服务              ║
-╠════════════════════════════════════════════╣
-║  📡 服务器地址: http://localhost:${PORT}        ║
-║  📦 数据库: ${process.env.DB_HOST}  ║
-║  🌐 前端静态文件: ${clientDistPath}  ║
-╚════════════════════════════════════════════╝
-  `);
-  
-  // 初始化数据库
-  await initDatabase();
-  
-  console.log('🚀 服务已启动，等待请求...');
 });
+
+// 按系列获取库存
+app.get('/api/inventory/series/:series', async (req, res) => {
+  try {
+    const { series } = req.params;
+    const result = await pool.query(
+      'SELECT series, number, quantity FROM inventory WHERE series = $1 AND quantity > 0 ORDER BY number',
+      [series.toUpperCase()]
+    );
+    res.json(result.rows);
+  } catch (error) {
+    res.status(500).json({ error: '获取库存失败' });
+  }
+});
+
+// 获取单个库存项
+app.get('/api/inventory/:series/:number', async (req, res) => {
+  try {
+    const { series, number } = req.params;
+    const result = await pool.query(
+      'SELECT series, number, quantity FROM inventory WHERE series = $1 AND number = $2',
+      [series.toUpperCase(), parseInt(number)]
+    );
+    
+    if (result.rows.length === 0) {
+      return res.json({ series: series.toUpperCase(), number: parseInt(number), quantity: 0 });
+    }
+    res.json(result.rows[0]);
+  } catch (error) {
+    res.status(500).json({ error: '获取库存项失败' });
+  }
+});
+
+// 添加或更新库存
+app.post('/api/inventory', async (req, res) => {
+  try {
+    const { series, number, quantity, type = 'in' } = req.body;
+
+    if (!series || !number || !quantity) {
+      return res.status(400).json({ error: '缺少必要参数' });
+    }
+
+    const upperSeries = series.toUpperCase();
+    const num = parseInt(number);
+    const qty = parseInt(quantity);
+
+    const result = await pool.query(
+      `INSERT INTO inventory (series, number, quantity, updated_at)
+       VALUES ($1, $2, $3, CURRENT_TIMESTAMP)
+       ON CONFLICT (series, number)
+       DO UPDATE SET 
+         quantity = inventory.quantity + EXCLUDED.quantity,
+         updated_at = CURRENT_TIMESTAMP
+       RETURNING *`,
+      [upperSeries, num, qty]
+    );
+
+    await pool.query(
+      `INSERT INTO transactions (series, number, type, quantity)
+       VALUES ($1, $2, $3, $4)`,
+      [upperSeries, num, type, qty]
+    );
+
+    res.json({ success: true, data: result.rows[0] });
+  } catch (error) {
+    console.error('添加库存失败:', error);
+    res.status(500).json({ error: '添加库存失败' });
+  }
+});
+
+// 更新库存数量
+app.patch('/api/inventory/:series/:number', async (req, res) => {
+  try {
+    const { series, number } = req.params;
+    const { delta, type } = req.body;
+
+    if (delta === undefined) {
+      return res.status(400).json({ error: '缺少 delta 参数' });
+    }
+
+    const upperSeries = series.toUpperCase();
+    const num = parseInt(number);
+    const d = parseInt(delta);
+    const transactionType = type || (d > 0 ? 'in' : 'out');
+
+    const current = await pool.query(
+      'SELECT quantity FROM inventory WHERE series = $1 AND number = $2',
+      [upperSeries, num]
+    );
+
+    const currentQty = current.rows.length > 0 ? current.rows[0].quantity : 0;
+    const newQty = Math.max(0, currentQty + d);
+
+    if (current.rows.length === 0) {
+      await pool.query(
+        `INSERT INTO inventory (series, number, quantity) VALUES ($1, $2, $3)`,
+        [upperSeries, num, newQty]
+      );
+    } else {
+      await pool.query(
+        `UPDATE inventory SET quantity = $1, updated_at = CURRENT_TIMESTAMP 
+         WHERE series = $2 AND number = $3`,
+        [newQty, upperSeries, num]
+      );
+    }
+
+    await pool.query(
+      `INSERT INTO transactions (series, number, type, quantity)
+       VALUES ($1, $2, $3, $4)`,
+      [upperSeries, num, transactionType, Math.abs(d)]
+    );
+
+    res.json({ success: true, data: { series: upperSeries, number: num, quantity: newQty } });
+  } catch (error) {
+    console.error('更新库存失败:', error);
+    res.status(500).json({ error: '更新库存失败' });
+  }
+});
+
+// 获取所有交易记录
+app.get('/api/transactions', async (req, res) => {
+  try {
+    const { series, number, limit = 100, offset = 0 } = req.query;
+    
+    let query = 'SELECT * FROM transactions WHERE 1=1';
+    let countQuery = 'SELECT COUNT(*) FROM transactions WHERE 1=1';
+    const params = [];
+    const countParams = [];
+    let paramIndex = 1;
+
+    if (series) {
+      query += ` AND series = $${paramIndex}`;
+      countQuery += ` AND series = $${paramIndex}`;
+      params.push(series);
+      countParams.push(series);
+      paramIndex++;
+    }
+
+    if (number) {
+      query += ` AND number = $${paramIndex}`;
+      countQuery += ` AND number = $${paramIndex}`;
+      params.push(parseInt(number));
+      countParams.push(parseInt(number));
+      paramIndex++;
+    }
+
+    query += ` ORDER BY timestamp DESC LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
+    params.push(parseInt(limit), parseInt(offset));
+
+    const [dataResult, countResult] = await Promise.all([
+      pool.query(query, params),
+      pool.query(countQuery, countParams)
+    ]);
+
+    res.json({
+      data: dataResult.rows,
+      total: parseInt(countResult.rows[0].count),
+      limit: parseInt(limit),
+      offset: parseInt(offset)
+    });
+  } catch (error) {
+    console.error('获取交易记录失败:', error);
+    res.status(500).json({ error: '获取交易记录失败' });
+  }
+});
+
+// 获取单个库存的交易记录
+app.get('/api/transactions/:series/:number', async (req, res) => {
+  try {
+    const { series, number } = req.params;
+    const result = await pool.query(
+      `SELECT * FROM transactions WHERE series = $1 AND number = $2 ORDER BY timestamp DESC LIMIT 50`,
+      [series.toUpperCase(), parseInt(number)]
+    );
+    res.json(result.rows);
+  } catch (error) {
+    console.error('获取交易记录失败:', error);
+    res.status(500).json({ error: '获取交易记录失败' });
+  }
+});
+
+export default app;
