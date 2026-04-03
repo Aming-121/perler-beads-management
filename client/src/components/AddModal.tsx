@@ -46,7 +46,7 @@ export default function AddModal({ onClose, onAdd }: Props) {
           <div className="selector-group">
             <label className="selector-label">选择序号</label>
             <div className="selector-options">
-              {Array.from({ length: 60 }, (_, i) => i + 1).map(n => (
+              {Array.from({ length: 35 }, (_, i) => i + 1).map(n => (
                 <div
                   key={n}
                   className={`selector-option ${selectedNum === n ? 'selected' : ''}`}

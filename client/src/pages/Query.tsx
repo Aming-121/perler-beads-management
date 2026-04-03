@@ -36,6 +36,7 @@ const formatFullDate = (isoString: string) => {
 export default function Query({ transactions }: Props) {
   const [filterSeries, setFilterSeries] = useState('全部');
   const [filterNumber, setFilterNumber] = useState('');
+  const [filterDate, setFilterDate] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
 
   // Filter transactions
@@ -44,6 +45,11 @@ export default function Query({ transactions }: Props) {
     if (filterSeries !== '全部' && t.series !== filterSeries) return false;
     // 序号筛选
     if (filterNumber && t.number !== parseInt(filterNumber)) return false;
+    // 日期筛选
+    if (filterDate) {
+      const txDate = new Date(t.timestamp).toLocaleDateString('zh-CN', { timeZone: 'Asia/Shanghai' });
+      if (txDate !== filterDate) return false;
+    }
     // 搜索筛选
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
@@ -131,10 +137,36 @@ export default function Query({ transactions }: Props) {
               onChange={e => setFilterNumber(e.target.value)}
             >
               <option value="">全部序号</option>
-              {Array.from({ length: 60 }, (_, i) => i + 1).map(n => (
+              {Array.from({ length: 35 }, (_, i) => i + 1).map(n => (
                 <option key={n} value={n}>序号 {n}</option>
               ))}
             </select>
+          </div>
+          {/* 日期筛选 */}
+          <div className="filter-row" style={{ marginTop: '8px' }}>
+            <input
+              type="date"
+              className="filter-select"
+              value={filterDate}
+              onChange={e => setFilterDate(e.target.value)}
+              style={{ flex: 1, color: filterDate ? '#1f2937' : '#9ca3af' }}
+            />
+            {filterDate && (
+              <button
+                onClick={() => setFilterDate('')}
+                style={{
+                  padding: '8px 12px',
+                  background: '#f3f4f6',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '12px',
+                  color: '#6b7280',
+                  cursor: 'pointer'
+                }}
+              >
+                清除日期
+              </button>
+            )}
           </div>
         </div>
 
