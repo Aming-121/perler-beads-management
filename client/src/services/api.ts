@@ -68,8 +68,8 @@ export const inventoryApi = {
 
 // 交易记录 API
 export const transactionApi = {
-  // 获取所有交易记录
-  getAll: async (params?: {
+// 获取所有交易记录
+getAll: async (params?: {
     series?: string;
     number?: number;
     limit?: number;
@@ -82,6 +82,10 @@ export const transactionApi = {
     if (params?.offset) searchParams.set('offset', String(params.offset));
     
     const res = await fetch(`${API_BASE}/transactions?${searchParams}`);
+    if (!res.ok) {
+      console.error('API Error:', res.status);
+      return { data: [], total: 0, limit: 100, offset: 0 };
+    }
     return res.json();
   },
 
