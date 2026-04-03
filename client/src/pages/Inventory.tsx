@@ -30,8 +30,16 @@ export default function Inventory({
       await inventoryApi.add(series, number, quantity);
       // 触发父组件刷新数据
       window.dispatchEvent(new CustomEvent('refreshData'));
+      // 显示成功提示
+      window.dispatchEvent(new CustomEvent('showToast', { 
+        detail: { message: `${series}${number} 已添加 +${quantity}`, type: 'success' }
+      }));
     } catch (err) {
       console.error('添加失败:', err);
+      // 显示失败提示
+      window.dispatchEvent(new CustomEvent('showToast', { 
+        detail: { message: '添加失败，请重试', type: 'error' }
+      }));
     } finally {
       setAdding(false);
       setShowAddModal(false);

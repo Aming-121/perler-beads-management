@@ -39,6 +39,15 @@ export default function Query({ transactions }: Props) {
   const [filterDate, setFilterDate] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
 
+  // 日期格式化函数（返回 YYYY-MM-DD 格式）
+  const formatToDateString = (isoString: string) => {
+    const date = new Date(isoString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   // Filter transactions
   const filteredTransactions = transactions.filter(t => {
     // 系列筛选
@@ -47,7 +56,7 @@ export default function Query({ transactions }: Props) {
     if (filterNumber && t.number !== parseInt(filterNumber)) return false;
     // 日期筛选
     if (filterDate) {
-      const txDate = new Date(t.timestamp).toLocaleDateString('zh-CN', { timeZone: 'Asia/Shanghai' });
+      const txDate = formatToDateString(t.timestamp);
       if (txDate !== filterDate) return false;
     }
     // 搜索筛选
