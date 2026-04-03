@@ -1,7 +1,7 @@
 import { InventoryItem, Transaction } from '../types';
 
-// Vercel 部署时使用后端地址
-const API_BASE = 'https://perler-beads-management-server.vercel.app/api';
+// Cloudflare Worker 代理地址（国内可访问）
+const API_BASE = 'https://hidden-sky-7418.160405334.workers.dev/api';
 
 // 类型定义
 interface ApiResponse<T> {

@@ -5,7 +5,7 @@ import pool from './db/connection.js';
 const app = express();
 
 app.use(cors({
-  origin: 'https://perler-beads-management-client.vercel.app',
+  origin: ['https://hidden-sky-7418.160405334.workers.dev', 'https://perler-beads-management-client.vercel.app'],
   credentials: true
 }));
 app.use(express.json());
