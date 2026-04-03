@@ -1,7 +1,7 @@
 import { InventoryItem, Transaction } from '../types';
 
-// 使用相对路径，通过 Vite 代理访问后端
-const API_BASE = '/api';
+// Vercel 部署时使用后端地址
+const API_BASE = 'https://perler-beads-management-server.vercel.app/api';
 
 // 类型定义
 interface ApiResponse<T> {

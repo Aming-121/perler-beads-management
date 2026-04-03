@@ -16,7 +16,10 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // 中间件
-app.use(cors());
+app.use(cors({
+  origin: 'https://perler-beads-management-client.vercel.app',
+  credentials: true
+}));
 app.use(express.json());
 
 // 请求日志
