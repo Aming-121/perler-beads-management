@@ -1,21 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
-import pg from 'pg';
-
-dotenv.config();
-
-const { Pool } = pg;
-
-const pool = new Pool({
-  host: process.env.DB_HOST || 'db.wysxndhhqwirsdgubjmv.supabase.co',
-  port: process.env.DB_PORT || 5432,
-  database: process.env.DB_NAME || 'postgres',
-  user: process.env.DB_USER || 'postgres',
-  password: process.env.DB_PASSWORD || process.env.DB_HOST ? '' : 'eIZSF0oWUD7h59JK',
-  ssl: { rejectUnauthorized: false },
-  max: 20,
-});
+import pool from './db/connection.js';
 
 const app = express();
 
@@ -31,7 +16,8 @@ app.get('/api/health', async (req, res) => {
     await pool.query('SELECT 1');
     res.json({ status: 'ok', database: 'connected' });
   } catch (error) {
-    res.status(500).json({ status: 'error', database: 'disconnected' });
+    console.error('DB Error:', error.message);
+    res.status(500).json({ status: 'error', database: 'disconnected', error: error.message });
   }
 });
 
