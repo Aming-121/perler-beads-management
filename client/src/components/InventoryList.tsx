@@ -19,7 +19,7 @@ export default function InventoryList({ inventory, onUpdate, searchQuery }: Prop
     ? SERIES_LIST.filter(s => {
         const item = inventory.get(`${s}${searchQuery}`);
         if (item) return true;
-        for (let n = 1; n <= 31; n++) {
+        for (let n = 1; n <= 35; n++) {
           const key = `${s}${n}`;
           if (inventory.get(key) && key.toLowerCase().includes(searchQuery.toLowerCase())) {
             return true;
@@ -32,10 +32,11 @@ export default function InventoryList({ inventory, onUpdate, searchQuery }: Prop
   // Get items for a series
   const getSeriesItems = (series: string): InventoryItem[] => {
     const items: InventoryItem[] = [];
-    for (let n = 1; n <= 31; n++) {
+    for (let n = 1; n <= 35; n++) {
       const key = `${series}${n}`;
       const item = inventory.get(key);
-      if (item && item.quantity > 0) {
+      // 显示所有已存在的项目，包括数量为0的
+      if (item) {
         items.push(item);
       }
     }
@@ -113,14 +114,14 @@ export default function InventoryList({ inventory, onUpdate, searchQuery }: Prop
             {getFilteredItems(expandedSeries).map(item => (
               <div
                 key={`${item.series}${item.number}`}
-                className="item-card"
+                className={`item-card ${item.quantity === 0 ? 'zero' : ''}`}
                 onClick={() => setSelectedItem(item)}
               >
                 <div className="item-name">
                   {item.series}{item.number}
                 </div>
                 <div className={`item-qty ${item.quantity === 0 ? 'zero' : item.quantity < 5 ? 'low' : ''}`}>
-                  {item.quantity}
+                  {item.quantity === 0 ? '缺货' : item.quantity}
                 </div>
               </div>
             ))}

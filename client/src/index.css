@@ -528,6 +528,15 @@ html, body {
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
+.item-card.zero {
+  background: #f9fafb;
+  opacity: 0.7;
+}
+
+.item-card.zero .item-name {
+  color: #9ca3af;
+}
+
 .item-name {
   font-size: 14px;
   font-weight: 600;
@@ -541,7 +550,12 @@ html, body {
 }
 
 .item-qty.zero {
-  color: #9ca3af;
+  color: #ef4444;
+  font-size: 12px;
+  font-weight: 600;
+  background: #fef2f2;
+  padding: 2px 8px;
+  border-radius: 6px;
 }
 
 .item-qty.low {
